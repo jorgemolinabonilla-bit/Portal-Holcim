@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var historyBody = document.getElementById('package-history-body');
         if (!listBody || !historyBody) return;
 
-        var pkgData = JSON.parse(localStorage.getItem('holcim_packages') || '[]');
+        var pkgData = window.getSiteData('holcim_packages');
         var search = (document.getElementById('pkg-search')?.value || '').toLowerCase();
         var start = document.getElementById('pkg-filter-start')?.value;
         var end = document.getElementById('pkg-filter-end')?.value;
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     window.exportPackages = function (format) {
-        var pkgData = JSON.parse(localStorage.getItem('holcim_packages') || '[]');
+        var pkgData = window.getSiteData('holcim_packages');
         if (pkgData.length === 0) {
             if (typeof showNotification === 'function') showNotification('NO HAY PAQUETES PARA EXPORTAR', 'danger');
             return;
@@ -88,7 +88,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     window.openPackageEdit = function (id) {
-        var pkgData = JSON.parse(localStorage.getItem('holcim_packages') || '[]');
+        var pkgData = JSON.parse(localStorage.getItem(window.getSiteKey('holcim_packages')) || '[]');
         var pkg = pkgData.find(function (p) { return p.id === id; });
         if (pkg) {
             document.getElementById('edit-package-id').value = pkg.id;
@@ -100,7 +100,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     window.savePackageEdit = function () {
         var id = parseInt(document.getElementById('edit-package-id').value);
-        var pkgData = JSON.parse(localStorage.getItem('holcim_packages') || '[]');
+        var pkgData = JSON.parse(localStorage.getItem(window.getSiteKey('holcim_packages')) || '[]');
         var pkg = pkgData.find(function (p) { return p.id === id; });
         if (pkg) {
             var fields = {
@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             }
             if (changed) {
-                localStorage.setItem('holcim_packages', JSON.stringify(pkgData));
+                localStorage.setItem(window.getSiteKey('holcim_packages'), JSON.stringify(pkgData));
                 if (typeof showNotification === 'function') showNotification('PAQUETE ACTUALIZADO', 'success');
             }
             document.getElementById('modal-edit-package').style.display = 'none';
@@ -126,7 +126,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     window.deliverPackage = function (id) {
-        var pkgData = JSON.parse(localStorage.getItem('holcim_packages') || '[]');
+        var pkgData = JSON.parse(localStorage.getItem(window.getSiteKey('holcim_packages')) || '[]');
         var pkg = null;
         for (var i = 0; i < pkgData.length; i++) {
             if (pkgData[i].id === id) { pkg = pkgData[i]; break; }
@@ -146,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         pkg.deliveredAt = Date.now();
         pkg.receivedBy = receiver.trim().toUpperCase();
-        localStorage.setItem('holcim_packages', JSON.stringify(pkgData));
+        localStorage.setItem(window.getSiteKey('holcim_packages'), JSON.stringify(pkgData));
 
         if (typeof addLogEvent === 'function') {
             addLogEvent('PAQUETERIA', 'Entregado a ' + pkg.receivedBy + ' | Para: ' + pkg.recipient + ' | De: ' + pkg.courier);
@@ -176,9 +176,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 receivedBy: null
             };
 
-            var pkgData = JSON.parse(localStorage.getItem('holcim_packages') || '[]');
+            var pkgData = JSON.parse(localStorage.getItem(window.getSiteKey('holcim_packages')) || '[]');
             pkgData.unshift(newPkg);
-            localStorage.setItem('holcim_packages', JSON.stringify(pkgData));
+            localStorage.setItem(window.getSiteKey('holcim_packages'), JSON.stringify(pkgData));
 
             if (typeof addLogEvent === 'function') {
                 addLogEvent('PAQUETERIA', 'Nuevo paquete (Seg: ' + newPkg.receivedByOfficer + ') de ' + newPkg.courier + ' para ' + newPkg.recipient);

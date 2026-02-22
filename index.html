@@ -1,14 +1,18 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Holcim Group | Portal de Seguridad</title>
+    <title>CENTRO DE TRABAJO SEGURIDAD PATRIMONIAL | V.1</title>
     <link rel="stylesheet" href="style.css">
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+    <!-- Leaflet.js for Interactive Maps -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <style>
         @keyframes pulse-red {
             0% {
@@ -41,7 +45,8 @@
             <div class="holcim-logo-text">HOLCIM</div>
             <div id="header-site-name"
                 style="margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--border-gray); color: var(--text-muted); font-size: 0.75rem; font-weight: 600; text-transform: uppercase;">
-                CONTROL DE ACCESO
+                CENTRO DE TRABAJO SEGURIDAD PATRIMONIAL <span
+                    style="font-size: 0.6rem; background: var(--primary-teal); color: white; padding: 2px 6px; border-radius: 4px; margin-left: 10px;">V.1</span>
             </div>
         </div>
 
@@ -51,9 +56,13 @@
         </div>
 
         <div class="header-actions">
+            <div class="lang-switcher">
+                <button class="lang-btn active" data-lang="es" onclick="setLanguage('es')">ES</button>
+                <button class="lang-btn" data-lang="en" onclick="setLanguage('en')">EN</button>
+            </div>
             <div class="clock-display" id="digital-clock">00:00:00</div>
             <div class="user-profile">J</div>
-            <button class="btn-logout-header" id="btn-logout-header" title="Cerrar Sesión">
+            <button class="btn-logout-header" id="btn-logout-header" title="Cerrar SESIóN">
                 <i class="fas fa-sign-out-alt"></i>
             </button>
         </div>
@@ -61,37 +70,54 @@
 
     <nav class="nav-bar">
         <ul class="nav-links">
-            <li><a href="#" class="nav-link active" data-view="dashboard"><i class="fas fa-id-card"></i> Control de
-                    Acceso</a></li>
-            <li><a href="#" class="nav-link" data-view="extra-auth"><i class="fas fa-user-check"></i> Autorizaciones
-                    Extraordinarias</a></li>
-            <li><a href="#" class="nav-link" data-view="keys"><i class="fas fa-key"></i> Control de Llaves</a></li>
-            <li><a href="#" class="nav-link" data-view="packages"><i class="fas fa-box-open"></i> Gestión de
-                    Paquetería</a></li>
-            <li><a href="#" class="nav-link" data-view="forms"><i class="fas fa-file-signature"></i> Formularios de
-                    Reportes</a></li>
-            <li><a href="#" class="nav-link" data-view="database"><i class="fas fa-database"></i> Base de Datos</a></li>
-            <li><a href="#" class="nav-link" data-view="settings"><i class="fas fa-cog"></i> Configuración</a></li>
+            <li><a href="#" class="nav-link active" data-view="dashboard"><i class="fas fa-id-card"></i> <span
+                        data-i18n="nav_dashboard">Control de Acceso</span></a></li>
+            <li><a href="#" class="nav-link" data-view="extra-auth"><i class="fas fa-user-check"></i> <span
+                        data-i18n="nav_extra_auth">Autorizaciones Extraordinarias</span></a></li>
+            <li><a href="#" class="nav-link" data-view="keys"><i class="fas fa-key"></i> <span
+                        data-i18n="nav_keys">Control de Llaves</span></a></li>
+            <li><a href="#" class="nav-link" data-view="packages"><i class="fas fa-box-open"></i> <span
+                        data-i18n="nav_packages">Gestión de Paquetería</span></a></li>
+            <li><a href="#" class="nav-link" data-view="forms"><i class="fas fa-file-signature"></i> <span
+                        data-i18n="nav_forms">Formularios de Reportes</span></a></li>
+            <li><a href="#" class="nav-link" data-view="database"><i class="fas fa-database"></i> <span
+                        data-i18n="nav_database">Base de Datos</span></a></li>
+            <li><a href="#" class="nav-link" data-view="security-systems"><i class="fas fa-shield-halved"></i>
+                    <span>GESTIÓN DE SISTEMAS DE SEGURIDAD</span></a></li>
+            <li><a href="#" class="nav-link" data-view="calendar"><i class="fas fa-calendar-alt"></i>
+                    <span>CALENDARIO</span></a></li>
+            <li><a href="#" class="nav-link" data-view="settings"><i class="fas fa-cog"></i> <span
+                        data-i18n="nav_settings">Configuración</span></a></li>
+            <li class="theme-switch-container"
+                style="margin-top: auto; padding: 1rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <button id="theme-toggle" class="btn-theme-toggle" title="Cambiar Modo (Día/Noche)"
+                    style="background: none; border: 1px solid rgba(255,255,255,0.2); color: white; width: 100%; padding: 10px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 0.7rem; font-weight: 700;">
+                    <i class="fas fa-moon"></i>
+                    <span>MODO NOCHE</span>
+                </button>
+            </li>
         </ul>
     </nav>
 
-    <!-- Login System -->
+    <!-- Premium Login System -->
     <div id="login-overlay">
         <div class="login-card">
             <div class="holcim-logo-icon"></div>
-            <h2 style="color: var(--navy-black); margin-bottom: 0.5rem; font-weight: 900;">PORTAL DE SEGURIDAD</h2>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin-bottom: 2rem;">Inicie sesión para continuar
+            <h2 data-i18n="login_title">SEGURIDAD PATRIMONIAL</h2>
+            <p style="font-weight: 800; color: var(--primary-teal); margin-top: -10px; margin-bottom: 20px;">VERSIÓN 1.0
             </p>
+            <p data-i18n="login_subtitle">Inicie sesión para continuar</p>
             <form id="login-form">
-                <div class="form-group" style="text-align: left;">
-                    <label class="form-label">Correo Electrónico</label>
-                    <input type="email" id="login-email" placeholder="ejemplo@holcim.com" required>
+                <div class="login-field-group">
+                    <input type="email" id="login-email" placeholder="Email" required>
                 </div>
-                <div class="form-group" style="text-align: left; margin-top: 1rem;">
-                    <label class="form-label">Contraseña</label>
-                    <input type="password" id="login-pass" placeholder="••••••••" required>
+                <div class="login-field-group">
+                    <input type="password" id="login-pass" placeholder="Password" required>
                 </div>
-                <button type="submit" class="btn-submit-action" style="margin-top: 2rem;">RECONOCER IDENTIDAD</button>
+                <button type="submit" class="btn-login-premium">
+                    <span data-i18n="login_btn">ACCEDER</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
             </form>
         </div>
     </div>
@@ -100,6 +126,12 @@
 
         <!-- ===================== DASHBOARD / ACCESS CONTROL ===================== -->
         <div id="dashboard-view" class="view-section">
+            <div class="view-header"
+                style="margin-bottom: 2.5rem; padding: 2rem; background: linear-gradient(135deg, var(--navy-black), var(--navy-dark)); border-radius: 12px; color: white; box-shadow: var(--card-shadow); border-left: 6px solid var(--primary-teal);">
+                <h2
+                    style="font-size: 2.2rem; font-weight: 900; text-transform: uppercase; letter-spacing: -1px; margin-bottom: 0;">
+                    Centro de Monitoreo y Control de Accesos</h2>
+            </div>
             <div class="dashboard-grid">
                 <aside class="card-panel">
                     <div class="panel-header">
@@ -129,13 +161,13 @@
                             </div>
 
                             <div class="form-group">
-                                <label class="form-label">Inducción de Seguridad</label>
+                                <label class="form-label">InducciÓn de Seguridad</label>
                                 <div class="induction-checkbox">
                                     <input type="checkbox" id="inductionPassed">
-                                    <label for="inductionPassed">Registrar inducción realizada hoy</label>
+                                    <label for="inductionPassed">Registrar InducciÓn realizada hoy</label>
                                 </div>
-                                <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 4px;">* Válida por 1
-                                    año calendario.</p>
+                                <p style="font-size: 0.6rem; color: var(--text-muted); margin-top: 4px;">* VÁlida por 1
+                                    aÑo calendario.</p>
                             </div>
 
                             <div class="form-group">
@@ -150,7 +182,7 @@
 
                             <div class="form-group">
                                 <label class="form-label">Nombre Completo</label>
-                                <input type="text" id="fullName" placeholder="Validación automática Hacienda/TSE"
+                                <input type="text" id="fullName" placeholder="Validación automÁtica Hacienda/TSE"
                                     required>
                             </div>
 
@@ -211,7 +243,9 @@
 
                             <div class="form-group">
                                 <label class="form-label">Gafete Asignado</label>
-                                <input type="text" id="badgeNumber" placeholder="G0000" required>
+                                <select id="badgeNumber" required>
+                                    <option value="">Seleccione Gafete...</option>
+                                </select>
                             </div>
 
                             <button type="submit" class="btn-submit-action">REGISTRAR ENTRADA</button>
@@ -316,7 +350,7 @@
                                     <span>Responsable</span>
                                     <span>Motivo</span>
                                     <span>Ingreso</span>
-                                    <span>Acción</span>
+                                    <span>AcciÓn</span>
                                 </div>
                                 <div id="monitor-list-body"><!-- Dynamic rows --></div>
                                 <div id="empty-state"
@@ -356,7 +390,7 @@
                         </div>
                     </div>
                     <div class="filter-group">
-                        <label>Búsqueda General</label>
+                        <label>BÚsqueda General</label>
                         <input type="text" id="report-search" placeholder="Nombre, Cédula, Empresa...">
                     </div>
                     <div class="filter-group">
@@ -399,11 +433,11 @@
                 </div>
                 <div class="filter-bar" style="grid-template-columns: 1fr 1fr 200px;">
                     <div class="filter-group">
-                        <label>Búsqueda Personal</label>
+                        <label>BÚsqueda Personal</label>
                         <input type="text" id="induction-search" placeholder="Cédula, Nombre o Empresa...">
                     </div>
                     <div class="filter-group">
-                        <label>Fecha de Inducción (Rango)</label>
+                        <label>Fecha de InducciÓn (Rango)</label>
                         <div style="display: flex; gap: 5px;">
                             <input type="date" id="ind-date-start">
                             <input type="date" id="ind-date-end">
@@ -419,12 +453,13 @@
                     </div>
                 </div>
                 <div class="monitor-list">
-                    <div class="list-head" style="grid-template-columns: 120px 1fr 150px 150px 130px;">
+                    <div class="list-head" style="grid-template-columns: 120px 1fr 140px 140px 120px 100px;">
                         <span>Cédula</span>
                         <span>Nombre Completo</span>
                         <span>Empresa</span>
-                        <span>Última Inducción</span>
-                        <span>Vigencia</span>
+                        <span>Departamento</span>
+                        <span>Última Ind.</span>
+                        <span>Estado</span>
                     </div>
                     <div id="induction-list-body"><!-- Induction database rows --></div>
                 </div>
@@ -457,15 +492,15 @@
                             </div>
                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                                 <div class="form-group">
-                                    <label class="form-label">Fecha Emisión</label>
+                                    <label class="form-label">Fecha EmisiÓn</label>
                                     <input type="date" id="auth-date-start" required>
                                 </div>
                                 <div class="form-group">
-                                    <label class="form-label">Fecha Expiración</label>
+                                    <label class="form-label">Fecha ExpiraciÓn</label>
                                     <input type="date" id="auth-date-end" required>
                                 </div>
                             </div>
-                            <button type="submit" class="btn-submit-action">GUARDAR AUTORIZACIÓN</button>
+                            <button type="submit" class="btn-submit-action">GUARDAR AUTORIZACIóN</button>
                         </form>
                     </div>
                 </aside>
@@ -510,7 +545,7 @@
                                 <span>Persona</span>
                                 <span>Empresa</span>
                                 <span>Autoriza</span>
-                                <span>Emisión</span>
+                                <span>EmisiÓn</span>
                                 <span>Expira</span>
                                 <span>Estado</span>
                             </div>
@@ -549,7 +584,7 @@
                                 <input type="text" id="key-officer" list="officers-list"
                                     placeholder="Nombre del oficial" required>
                             </div>
-                            <button type="submit" class="btn-submit-action">REGISTRAR PRÉSTAMO</button>
+                            <button type="submit" class="btn-submit-action">REGISTRAR PrÉstamo</button>
                         </form>
                     </div>
                 </aside>
@@ -566,7 +601,7 @@
                                 <span>Llave</span>
                                 <span>Solicitante</span>
                                 <span>Oficial</span>
-                                <span>Acción</span>
+                                <span>AcciÓn</span>
                             </div>
                             <div id="key-list-body"><!-- Active loans --></div>
                         </div>
@@ -592,7 +627,7 @@
                     </div>
                     <div class="filter-group">
                         <label>Nombre de Llave</label>
-                        <input type="text" id="filter-key-name" placeholder="Ej: Portón 1...">
+                        <input type="text" id="filter-key-name" placeholder="Ej: PortÓn 1...">
                     </div>
                     <div class="filter-group">
                         <label>Solicitante</label>
@@ -606,7 +641,7 @@
                         <span>Solicitante</span>
                         <span>Oficial</span>
                         <span>Préstamo</span>
-                        <span>Devolución</span>
+                        <span>DevoluciÓn</span>
                         <span>Estado</span>
                     </div>
                     <div id="key-history-body"><!-- History rows --></div>
@@ -652,11 +687,11 @@
                     </div>
                     <div class="monitor-list">
                         <div class="list-head" style="grid-template-columns: 1fr 1fr 150px 150px 100px;">
-                            <span>Mensajería</span>
+                            <span>MensajerÍa</span>
                             <span>Para</span>
                             <span>Recibido por (Seg)</span>
                             <span>Fecha Recibido</span>
-                            <span>Acción</span>
+                            <span>AcciÓn</span>
                         </div>
                         <div id="package-list-body" style="max-height: 420px; overflow-y: auto;">
                             <!-- Dynamic Content -->
@@ -679,7 +714,7 @@
                 </div>
                 <div class="filter-bar" style="grid-template-columns: 1fr 150px 150px 120px;">
                     <div class="filter-group">
-                        <label>Buscador (Mensajería/Para)</label>
+                        <label>Buscador (MensajerÍa/Para)</label>
                         <input type="text" id="pkg-search" placeholder="Buscar...">
                     </div>
                     <div class="filter-group">
@@ -701,7 +736,7 @@
                 </div>
                 <div class="monitor-list">
                     <div class="list-head" style="grid-template-columns: 1fr 1fr 150px 150px 150px 150px 80px;">
-                        <span>Mensajería</span>
+                        <span>MensajerÍa</span>
                         <span>Para</span>
                         <span>Recibido por (Seg)</span>
                         <span>Fecha Recibido</span>
@@ -721,10 +756,27 @@
             <div class="panel-header" style="margin-bottom: 2rem;">
                 <h3><i class="fas fa-file-signature" style="color: var(--primary-teal);"></i> Formularios de Reportes
                     Externos</h3>
-                <p style="color: var(--text-muted); font-size: 0.8rem;">Acceda rápidamente a las herramientas de reporte
+                <p style="color: var(--text-muted); font-size: 0.8rem;">Acceda rÁpidamente a las herramientas de reporte
                     oficial de Holcim.</p>
             </div>
             <div class="dashboard-grid" style="grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));">
+                <div class="card-panel"
+                    style="display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--navy-black);">
+                    <div class="panel-body" style="padding: 2rem; text-align: center;">
+                        <i class="fas fa-file-invoice"
+                            style="font-size: 3rem; color: var(--navy-black); margin-bottom: 1.5rem;"></i>
+                        <h4 style="font-weight: 800; color: var(--navy-black); margin-bottom: 1rem;">REPORTE DE
+                            SEGURIDAD
+                            INTERNO (PDF)</h4>
+                        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 2rem;">Generación de
+                            reportes
+                            ejecutivos de eventos o incidentes para descarga inmediata.</p>
+                        <button onclick="openSafetyReportModal()" class="btn-submit-action"
+                            style="background: var(--navy-black); display: flex; align-items: center; justify-content: center; gap: 10px;">
+                            <i class="fas fa-edit"></i> CREAR REPORTE
+                        </button>
+                    </div>
+                </div>
                 <div class="card-panel"
                     style="display: flex; flex-direction: column; justify-content: space-between; border-top: 4px solid var(--primary-teal);">
                     <div class="panel-body" style="padding: 2rem; text-align: center;">
@@ -770,9 +822,11 @@
 
             <!-- Database Tab Navigation -->
             <div
-                style="display: flex; gap: 10px; margin-bottom: 2rem; border-bottom: 1px solid #ddd; padding-bottom: 10px;">
+                style="display: flex; gap: 10px; margin-bottom: 2rem; border-bottom: 1px solid #ddd; padding-bottom: 10px; overflow-x: auto;">
                 <button class="btn-export db-tab-btn active" onclick="switchDbTab('keys-tab', this)"
                     style="background: var(--navy-black);"><i class="fas fa-key"></i> Inventario de Llaves</button>
+                <button class="btn-export db-tab-btn" onclick="switchDbTab('badges-tab', this)"
+                    style="background: #8b5cf6;"><i class="fas fa-id-badge"></i> Inventario de Carnets</button>
                 <button class="btn-export db-tab-btn" onclick="switchDbTab('personnel-tab', this)"
                     style="background: var(--primary-teal);"><i class="fas fa-address-book"></i> Directorio de
                     Personal</button>
@@ -780,6 +834,10 @@
                     style="background: #64748b;"><i class="fas fa-shield-alt"></i> Oficiales de Seguridad</button>
                 <button class="btn-export db-tab-btn" onclick="switchDbTab('contact-tab', this)"
                     style="background: #e11d48;"><i class="fas fa-phone-alt"></i> Directorio de Planta</button>
+                <button class="btn-export db-tab-btn" onclick="switchDbTab('cctv-tab', this)"
+                    style="background: #1e293b;"><i class="fas fa-video"></i> Inventario CCTV</button>
+                <button class="btn-export db-tab-btn" onclick="switchDbTab('access-points-tab', this)"
+                    style="background: #0d9488;"><i class="fas fa-door-open"></i> Puntos de Acceso</button>
             </div>
 
             <div id="db-tabs-container">
@@ -803,7 +861,7 @@
                                 <div class="form-group">
                                     <label class="form-label">Alerta de Seguridad (Opcional)</label>
                                     <input type="text" id="db-key-alert"
-                                        placeholder="Ej: Requiere autorización de Gerencia">
+                                        placeholder="Ej: Requiere AUTORIZACIóN de Gerencia">
                                 </div>
                                 <div class="form-group">
                                     <label class="form-label">Estado</label>
@@ -822,9 +880,46 @@
                                     <span>Num</span>
                                     <span>Ubicación</span>
                                     <span>Estado</span>
-                                    <span>Acción</span>
+                                    <span>AcciÓn</span>
                                 </div>
                                 <div id="db-key-list-body"><!-- Keys CRUD --></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Badges Tab -->
+                <div id="badges-tab" class="db-tab-content" style="display: none;">
+                    <div class="card-panel">
+                        <div class="panel-header">
+                            <h4><i class="fas fa-id-badge"></i> Maestro de Carnets de Visitantes</h4>
+                        </div>
+                        <div class="panel-body">
+                            <form id="db-badge-form"
+                                style="display: grid; grid-template-columns: 120px 120px 1fr 100px; gap: 10px; align-items: end; margin-bottom: 1.5rem;">
+                                <div class="form-group">
+                                    <label class="form-label">Num Carnet</label>
+                                    <input type="text" id="db-badge-num" placeholder="Ej: 001" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Código Interno</label>
+                                    <input type="text" id="db-badge-code" placeholder="ABC-123" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Alerta / Nota (Opcional)</label>
+                                    <input type="text" id="db-badge-alert" placeholder="Ej: Carnet con falla en chip">
+                                </div>
+                                <button type="submit" class="btn-submit-action" style="height: 38px;"><i
+                                        class="fas fa-plus"></i></button>
+                            </form>
+                            <div class="monitor-list" style="max-height: 500px; overflow-y: auto;">
+                                <div class="list-head" style="grid-template-columns: 100px 120px 1fr 80px;">
+                                    <span>Carnet #</span>
+                                    <span>Código</span>
+                                    <span>Alertas / Notas</span>
+                                    <span>AcciÓn</span>
+                                </div>
+                                <div id="db-badge-list-body"><!-- Badges CRUD --></div>
                             </div>
                         </div>
                     </div>
@@ -873,7 +968,7 @@
                                 <div class="list-head" style="grid-template-columns: 1fr 120px 80px;">
                                     <span>Nombre</span>
                                     <span>Departamento</span>
-                                    <span>Acción</span>
+                                    <span>AcciÓn</span>
                                 </div>
                                 <div id="db-person-list-body"><!-- Personnel CRUD --></div>
                             </div>
@@ -906,7 +1001,7 @@
                                 <div class="list-head" style="grid-template-columns: 1fr 1fr 80px;">
                                     <span>Oficial</span>
                                     <span>Empresa</span>
-                                    <span>Acción</span>
+                                    <span>AcciÓn</span>
                                 </div>
                                 <div id="db-officer-list-body"><!-- Officers CRUD --></div>
                             </div>
@@ -973,9 +1068,213 @@
                                     <span>Depto</span>
                                     <span>Teléfono</span>
                                     <span>Radio</span>
-                                    <span>Acción</span>
+                                    <span>AcciÓn</span>
                                 </div>
                                 <div id="db-contact-list-body"><!-- Contacts CRUD --></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CCTV Tab -->
+                <div id="cctv-tab" class="db-tab-content" style="display: none;">
+                    <div class="card-panel">
+                        <div class="panel-header">
+                            <h4><i class="fas fa-video"></i> Maestro de Sistemas CCTV</h4>
+                        </div>
+                        <div class="panel-body">
+                            <form id="db-cctv-form"
+                                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) 80px; gap: 10px; align-items: end; margin-bottom: 1.5rem;">
+                                <div class="form-group">
+                                    <label class="form-label">Tipo Dispositivo</label>
+                                    <select id="db-cctv-type" required>
+                                        <option value="CAMARA DOMO">Cámara DOMO</option>
+                                        <option value="CAMARA FIJA">Cámara Fija</option>
+                                        <option value="CAMARA PTZ">Cámara PTZ</option>
+                                        <option value="PC">Computadora (PC)</option>
+                                        <option value="PANEL ALARMA">Panel de Alarma</option>
+                                        <option value="SENSOR ALARMA">Sensor de Alarma</option>
+                                        <option value="GRABADOR DVR">Grabador DVR</option>
+                                        <option value="GRABADOR NVR">Grabador NVR</option>
+                                        <option value="LECTORA ACCESO">Lectora de Acceso</option>
+                                        <option value="BARRERA VEHICULAR">Barrera Vehicular</option>
+                                        <option value="TROMPO / TORNIQUETE">Trompo / Torniquete</option>
+                                        <option value="VIDEO PORTERO">Video Portero</option>
+                                        <option value="SOFTWARE / SERVIDOR">Software / Servidor</option>
+                                        <option value="PANTALLA">Pantalla / Monitor</option>
+                                        <option value="OTROS">Otros</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Marca</label>
+                                    <input type="text" id="db-cctv-brand" placeholder="Hikvision, Bosch...">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Dirección IP</label>
+                                    <input type="text" id="db-cctv-ip" placeholder="10.0.0.0" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Ubicación</label>
+                                    <input type="text" id="db-cctv-location" placeholder="Ej: PortÓn 1" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Estado</label>
+                                    <select id="db-cctv-status">
+                                        <option value="OPERATIVO">Operativo</option>
+                                        <option value="FALLA">Falla</option>
+                                        <option value="MANTENIMIENTO">Mantenimiento</option>
+                                        <option value="FUERA DE SERVICIO">Fuera de Servicio</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Observación</label>
+                                    <input type="text" id="db-cctv-obs" placeholder="Notas...">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Latitud</label>
+                                    <div style="display: flex; gap: 5px;">
+                                        <input type="number" id="db-cctv-lat" step="any" placeholder="Lat...">
+                                        <button type="button" class="btn-salida-corpo"
+                                            onclick="openMapPicker('db-cctv-lat', 'db-cctv-lng')"
+                                            style="width: 40px; padding: 0;"><i
+                                                class="fas fa-location-dot"></i></button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Longitud</label>
+                                    <input type="number" id="db-cctv-lng" step="any" placeholder="Lng...">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Foto Ref.</label>
+                                    <input type="file" id="db-cctv-photo" accept="image/*" class="custom-file-input">
+                                </div>
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label class="form-label">Analíticas Activas</label>
+                                    <div class="analytics-checkbox-grid">
+                                        <label><input type="checkbox" name="cctv-analytics" value="CRUCE"><span>Cruce
+                                                Línea</span></label>
+                                        <label><input type="checkbox" name="cctv-analytics"
+                                                value="INTRUSION"><span>Intrusión</span></label>
+                                        <label><input type="checkbox" name="cctv-analytics"
+                                                value="MERODEO"><span>Merodeo</span></label>
+                                        <label><input type="checkbox" name="cctv-analytics"
+                                                value="OBJETO"><span>Objeto</span></label>
+                                        <label><input type="checkbox" name="cctv-analytics"
+                                                value="ROSTRO"><span>Rostro</span></label>
+                                        <label><input type="checkbox" name="cctv-analytics"
+                                                value="CONTEO"><span>Conteo</span></label>
+                                        <label><input type="checkbox" name="cctv-analytics"
+                                                value="SABOTAJE"><span>Sabotaje</span></label>
+                                        <label><input type="checkbox" name="cctv-analytics"
+                                                value="AUDIO"><span>Audio</span></label>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Horario</label>
+                                    <input type="text" id="db-cctv-analytics-schedule" placeholder="18:00 - 05:00">
+                                </div>
+                                <button type="submit" class="btn-submit-action" style="height: 38px;"><i
+                                        class="fas fa-plus"></i></button>
+                            </form>
+                            <div class="monitor-list" style="max-height: 500px; overflow-y: auto;">
+                                <div class="list-head"
+                                    style="grid-template-columns: 100px 100px 90px 1fr 100px 140px 100px 60px 80px;">
+                                    <span>Tipo</span>
+                                    <span>Marca</span>
+                                    <span>IP</span>
+                                    <span>Ubicación</span>
+                                    <span>Estado</span>
+                                    <span>Analíticas / Horario</span>
+                                    <span>Obs</span>
+                                    <span>Foto</span>
+                                    <span>AcciÓn</span>
+                                </div>
+                                <div id="db-cctv-list-body"><!-- CCTV CRUD --></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Access Points Tab -->
+                <div id="access-points-tab" class="db-tab-content" style="display: none;">
+                    <div class="card-panel">
+                        <div class="panel-header">
+                            <h4><i class="fas fa-door-open"></i> Inventario de Puntos de Acceso</h4>
+                        </div>
+                        <div class="panel-body">
+                            <div
+                                style="background: rgba(13,148,136,0.05); padding: 1.5rem; border-radius: 8px; border: 1px dashed #0d9488; margin-bottom: 2rem;">
+                                <h5 style="margin-top: 0; margin-bottom: 1rem; color: #0d9488;"><i
+                                        class="fas fa-plus-circle"></i> Registrar Punto de Acceso</h5>
+                                <form id="db-access-point-form"
+                                    style="display: grid; grid-template-columns: 1fr 1fr 120px 100px 100px 100px 80px; gap: 15px; align-items: end;">
+                                    <div class="form-group">
+                                        <label class="form-label">Nombre / Descripción</label>
+                                        <input type="text" id="db-ap-name" placeholder="Ej: PortÓn Principal" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Ubicación</label>
+                                        <input type="text" id="db-ap-location" placeholder="Ej: Entrada Norte" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Tipo</label>
+                                        <select id="db-ap-type">
+                                            <option value="PortÓn">PortÓn</option>
+                                            <option value="PUERTA">Puerta</option>
+                                            <option value="BARRERA">Barrera</option>
+                                            <option value="TORNIQUETE">Torniquete</option>
+                                            <option value="CASETA">Caseta de Control</option>
+                                            <option value="OTROS">Otros</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Estado</label>
+                                        <select id="db-ap-status">
+                                            <option value="OPERATIVO">Operativo</option>
+                                            <option value="FALLA">Falla</option>
+                                            <option value="MANTENIMIENTO">Mantenimiento</option>
+                                            <option value="FUERA DE SERVICIO">Fuera de Servicio</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Latitud</label>
+                                        <div style="display: flex; gap: 5px;">
+                                            <input type="number" id="db-ap-lat" step="any" placeholder="9.9281">
+                                            <button type="button" class="btn-salida-corpo"
+                                                onclick="openMapPicker('db-ap-lat', 'db-ap-lng')"
+                                                style="width: 40px; padding: 0;"><i
+                                                    class="fas fa-location-dot"></i></button>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Longitud</label>
+                                        <input type="number" id="db-ap-lng" step="any" placeholder="-84.0907">
+                                    </div>
+                                    <button type="submit" class="btn-submit-action"
+                                        style="height: 38px; background: #0d9488;"><i class="fas fa-plus"></i></button>
+                                </form>
+                                <div
+                                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 1rem;">
+                                    <div class="form-group">
+                                        <label class="form-label">Fotografía del Punto de Acceso</label>
+                                        <input type="file" id="db-ap-photo" accept="image/*" class="custom-file-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Observaciones</label>
+                                        <input type="text" id="db-ap-obs" placeholder="Notas adicionales...">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="monitor-list" style="max-height: 500px; overflow-y: auto;">
+                                <div class="list-head" style="grid-template-columns: 1fr 1fr 110px 130px 60px 70px;">
+                                    <span>Nombre</span>
+                                    <span>Ubicación</span>
+                                    <span>Tipo</span>
+                                    <span>Estado</span>
+                                    <span>Foto</span>
+                                    <span>AcciÓn</span>
+                                </div>
+                                <div id="db-access-points-list-body"><!-- Access Points CRUD --></div>
                             </div>
                         </div>
                     </div>
@@ -983,121 +1282,450 @@
             </div>
         </div>
 
+        <!-- ===================== SECURITY SYSTEMS HUB ===================== -->
+        <div id="security-systems-view" class="view-section" style="display: none;">
+            <!-- Hub Header -->
+            <div
+                style="background: linear-gradient(135deg, #0f172a, #1e293b); border-radius: 16px; padding: 1.5rem 2rem; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                <div>
+                    <h2
+                        style="color: white; font-size: 1.6rem; font-weight: 900; text-transform: uppercase; margin: 0;">
+                        <i class="fas fa-shield-halved" style="color: var(--primary-teal);"></i> Gestión de Sistemas de
+                        Seguridad
+                    </h2>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 0.75rem; margin: 0.3rem 0 0;">Monitoreo
+                        electrónico, REVISIóN de portones y seguimiento de incidencias</p>
+                </div>
+                <div id="security-systems-clock"
+                    style="color: white; font-size: 1.4rem; font-weight: 900; font-family: monospace; background: rgba(255,255,255,0.05); padding: 0.5rem 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                </div>
+            </div>
+
+            <!-- Hub Tab Buttons -->
+            <div style="display: flex; gap: 12px; margin-bottom: 2rem;">
+                <button class="btn-export security-hub-tab active" onclick="switchSecurityTab('sec-cctv', this)"
+                    style="background: var(--navy-black); padding: 12px 24px; font-size: 0.8rem; flex: 1;"><i
+                        class="fas fa-video"></i>&nbsp; Monitoreo Seg. Electrónica</button>
+                <button class="btn-export security-hub-tab" onclick="switchSecurityTab('sec-portones', this)"
+                    style="background: #0d9488; padding: 12px 24px; font-size: 0.8rem; flex: 1;"><i
+                        class="fas fa-door-open"></i>&nbsp; Checklist de Puntos de Acceso</button>
+            </div>
+
+            <!-- ---- TAB 1: CCTV Monitoring ---- -->
+            <div id="sec-cctv-tab" class="security-hub-content">
+                <div class="card-panel">
+                    <div class="panel-header"
+                        style="background: var(--navy-black); display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem;">
+                        <h3 style="color: white; margin: 0;"><i class="fas fa-video"></i> Gestión de Monitoreo CCTV</h3>
+                        <div class="db-tabs">
+                            <button class="btn-export db-tab-btn active" onclick="switchCctvMonTab('mon-daily', this)"
+                                style="background: var(--primary-teal); color: white;">Revision Diaria (18:00)</button>
+                            <button class="btn-export db-tab-btn" onclick="switchCctvMonTab('mon-rounds', this)"
+                                style="background: #64748b; color: white;">Rondas Virtuales</button>
+                            <button class="btn-export db-tab-btn" onclick="switchCctvMonTab('mon-history', this)"
+                                style="background: #1e293b; color: white;">Historial / Reportes</button>
+                            <button class="btn-export db-tab-btn" onclick="toggleCctvMap()"
+                                style="background: #0284c7; color: white;"><i class="fas fa-map-location-dot"></i>
+                                MAPA</button>
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <!-- CCTV Map Section -->
+                        <div id="cctv-map-wrapper"
+                            style="margin-bottom: 2rem; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-gray); display: none;">
+                            <div
+                                style="background: var(--navy-black); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.8rem; font-weight: 700;"><i class="fas fa-video"></i>
+                                    Ubicación de Cámaras y Dispositivos de Seguridad</span>
+                                <button class="btn-export" onclick="toggleCctvMap()"
+                                    style="padding: 4px 12px; font-size: 0.7rem; background: rgba(255,255,255,0.1);">CERRAR
+                                    MAPA</button>
+                            </div>
+                            <!-- Map Filters -->
+                            <div
+                                style="background: #f1f5f9; padding: 10px 15px; border-bottom: 1px solid var(--border-gray); display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                                <div style="flex: 1; min-width: 200px; position: relative;">
+                                    <i class="fas fa-search"
+                                        style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.8rem;"></i>
+                                    <input type="text" id="cctv-map-search"
+                                        placeholder="Buscar por nombre, ubicación o IP..."
+                                        style="width: 100%; padding: 8px 12px 8px 35px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.8rem;"
+                                        oninput="window.updateCctvMapMarkers()">
+                                </div>
+                                <select id="cctv-map-filter-type"
+                                    style="width: auto; min-width: 140px; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.8rem;"
+                                    onchange="window.updateCctvMapMarkers()">
+                                    <option value="ALL">Todos los Tipos</option>
+                                    <option value="PTZ">Cámaras PTZ</option>
+                                    <option value="FIJA">Cámaras Fijas</option>
+                                    <option value="DOMO">Cámaras Domo</option>
+                                    <option value="TERMICA">Cámaras Térmicas</option>
+                                    <option value="ANILLO">Anillos de Fibra</option>
+                                </select>
+                                <select id="cctv-map-filter-status"
+                                    style="width: auto; min-width: 140px; padding: 8px; border-radius: 6px; border: 1px solid #cbd5e1; font-size: 0.8rem;"
+                                    onchange="window.updateCctvMapMarkers()">
+                                    <option value="ALL">Todos los Estados</option>
+                                    <option value="OPERATIVA">Operativa</option>
+                                    <option value="FALLA">Con Falla</option>
+                                    <option value="MANTENIMIENTO">En Mantenimiento</option>
+                                </select>
+                            </div>
+                            <div id="cctv-map" style="height: 400px; width: 100%;"></div>
+                        </div>
+
+                        <!-- Daily Checklist Tab -->
+                        <div id="mon-daily-tab" class="mon-tab-content">
+                            <div class="checklist-header"
+                                style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <h4 style="color: var(--navy-black);">Checklist de Funcionamiento Diario</h4>
+                                    <p style="font-size: 0.8rem; color: var(--text-muted);">REVISIóN obligatoria de
+                                        inventario a las 18:00 Horas.</p>
+                                </div>
+                                <button class="btn-crear" onclick="saveCctvDailyReview()"><i class="fas fa-save"></i>
+                                    GUARDAR REVISIÓN</button>
+                            </div>
+                            <div id="cctv-daily-checklist-container">
+                                <!-- Dynamic checklist rows from inventory -->
+                            </div>
+                        </div>
+
+                        <!-- Virtual Rounds Tab -->
+                        <div id="mon-rounds-tab" class="mon-tab-content" style="display: none;">
+                            <div class="checklist-header" style="margin-bottom: 1.5rem;">
+                                <h4 style="color: var(--navy-black);">Registro de Rondas Virtuales</h4>
+                                <p style="font-size: 0.8rem; color: var(--text-muted);">Horario operativo: 19:00 - 04:00
+                                    AM.</p>
+                            </div>
+                            <form id="cctv-round-form" class="card-panel"
+                                style="background: #f8fafc; padding: 1.5rem; border: 1px solid var(--border-gray); margin-bottom: 2rem;">
+                                <div
+                                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                                    <div class="form-group">
+                                        <label class="form-label">Sector / Área Supervisada</label>
+                                        <input type="text" id="round-sector" placeholder="Ej: Perímetro Sur, Almacén..."
+                                            required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Puntos de Observación</label>
+                                        <input type="text" id="round-points" placeholder="Cámaras revisadas">
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="form-label">Estado de Novedad</label>
+                                        <select id="round-status">
+                                            <option value="SIN NOVEDAD">Sin Novedad</option>
+                                            <option value="NOVEDAD LEVE">Novedad Leve</option>
+                                            <option value="INCIDENTE">Incidente Detectado</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin-top: 1rem;">
+                                    <label class="form-label">Detalle de la Ronda / Seguimiento</label>
+                                    <textarea id="round-detail"
+                                        style="width: 100%; height: 80px; padding: 0.5rem; border-radius: 4px; border: 1px solid #d1d5db;"
+                                        placeholder="Describa lo observado..."></textarea>
+                                </div>
+                                <div style="display: flex; gap: 1rem; align-items: flex-end; margin-top: 1rem;">
+                                    <div class="form-group" style="margin: 0;">
+                                        <label class="form-label">Adjuntar Evidencia (Foto)</label>
+                                        <input type="file" id="round-photo" accept="image/*" class="custom-file-input">
+                                    </div>
+                                    <button type="submit" class="btn-submit-action" style="margin: 0; height: 42px;"><i
+                                            class="fas fa-plus"></i> REGISTRAR RONDA</button>
+                                </div>
+                            </form>
+                            <div id="rounds-list-container"></div>
+                        </div>
+
+                        <!-- History Tab -->
+                        <div id="mon-history-tab" class="mon-tab-content" style="display: none;">
+                            <div
+                                style="display: flex; gap: 1rem; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
+                                <div class="form-group" style="margin: 0; flex: 1; min-width: 200px;">
+                                    <label class="form-label">Filtrar por Fecha</label>
+                                    <input type="date" id="history-filter-date">
+                                </div>
+                                <div class="form-group" style="margin: 0; flex: 1; min-width: 200px;">
+                                    <label class="form-label">Tipo de Registro</label>
+                                    <select id="history-filter-type">
+                                        <option value="ALL">Todos los Registros</option>
+                                        <option value="DAILY">Revisiones Diarias</option>
+                                        <option value="ROUNDS">Rondas Virtuales</option>
+                                    </select>
+                                </div>
+                                <div class="export-actions" style="justify-content: flex-end;">
+                                    <button class="btn-export" onclick="exportCctvLogs('xls')"
+                                        style="background: #059669;"><i class="fas fa-file-excel"></i> Excel</button>
+                                    <button class="btn-export" onclick="exportCctvLogs('pdf')"
+                                        style="background: var(--red-holcim);"><i class="fas fa-file-pdf"></i>
+                                        PDF</button>
+                                </div>
+                            </div>
+                            <div id="cctv-history-container">
+                                <!-- History items rendered here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ---- TAB 2: Gates Checklist ---- -->
+            <div id="sec-portones-tab" class="security-hub-content" style="display: none;">
+                <div class="card-panel">
+                    <div class="panel-header"
+                        style="background: linear-gradient(135deg, #0d9488, #0f766e); display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem;">
+                        <div>
+                            <h3 style="color: white; margin: 0;"><i class="fas fa-door-open"></i> Checklist de
+                                Puntos de Acceso (19:00)</h3>
+                            <p style="color: rgba(255,255,255,0.7); font-size: 0.75rem; margin: 0.3rem 0 0;">
+                                Verificación diaria del estado operativo de los accesos perimetrales</p>
+                        </div>
+                        <button class="btn-crear" onclick="saveAccessPointReview()"
+                            style="background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3);"><i
+                                class="fas fa-save"></i> GUARDAR REVISIÓN</button>
+                    </div>
+                    <div class="panel-body">
+                        <!-- Stats banner -->
+                        <div
+                            style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem;">
+                            <div
+                                style="background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); border-radius: 12px; padding: 1rem; text-align: center;">
+                                <div id="portones-stat-ok" style="font-size: 2rem; font-weight: 900; color: #22c55e;">0
+                                </div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">OPERATIVOS
+                                </div>
+                            </div>
+                            <div
+                                style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; padding: 1rem; text-align: center;">
+                                <div id="portones-stat-fail" style="font-size: 2rem; font-weight: 900; color: #ef4444;">
+                                    0</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">CON FALLA
+                                </div>
+                            </div>
+                            <div
+                                style="background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); border-radius: 12px; padding: 1rem; text-align: center;">
+                                <div id="portones-stat-maint"
+                                    style="font-size: 2rem; font-weight: 900; color: #f59e0b;">0</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">
+                                    MANTENIMIENTO</div>
+                            </div>
+                            <div
+                                style="background: rgba(13,148,136,0.1); border: 1px solid rgba(13,148,136,0.2); border-radius: 12px; padding: 1rem; text-align: center;">
+                                <div id="portones-stat-total"
+                                    style="font-size: 2rem; font-weight: 900; color: #0d9488;">0</div>
+                                <div style="font-size: 0.7rem; color: var(--text-muted); font-weight: 700;">TOTAL
+                                    REGISTRADOS</div>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Map Section -->
+                        <div id="ap-map-wrapper"
+                            style="margin-bottom: 2rem; border-radius: 12px; overflow: hidden; border: 1px solid var(--border-gray); display: none;">
+                            <div
+                                style="background: var(--navy-black); color: white; padding: 10px 20px; display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-size: 0.8rem; font-weight: 700;"><i class="fas fa-map-marked-alt"></i>
+                                    Ubicación Geoespacial de Puntos</span>
+                                <button class="btn-export" onclick="toggleAPMap()"
+                                    style="padding: 4px 12px; font-size: 0.7rem; background: rgba(255,255,255,0.1);">CERRAR
+                                    MAPA</button>
+                            </div>
+                            <div id="ap-map" style="height: 400px; width: 100%;"></div>
+                        </div>
+
+                        <div style="margin-bottom: 1.5rem;">
+                            <button class="btn-crear" id="btn-toggle-map" onclick="toggleAPMap()"
+                                style="background: var(--primary-teal); width: auto; padding: 10px 20px;">
+                                <i class="fas fa-map-location-dot"></i> VER MAPA INTERACTIVO
+                            </button>
+                        </div>
+
+                        <!-- Checklist Container -->
+                        <div id="portones-checklist-container">
+                            <div style="text-align: center; padding: 3rem; color: var(--text-muted);">
+                                <i class="fas fa-door-open"
+                                    style="font-size: 3rem; opacity: 0.3; display: block; margin-bottom: 1rem;"></i>
+                                <p>No hay puntos de acceso registrados en la base de datos.</p>
+                                <p style="font-size: 0.8rem;">Agrega puntos de acceso en la sección <strong>Base de
+                                        Datos |
+                                        Puntos de Acceso</strong> para que aparezcan aquí.</p>
+                            </div>
+                        </div>
+
+                        <!-- Observations & Sign-off -->
+                        <div
+                            style="margin-top: 2rem; border-top: 1px solid var(--border-gray); padding-top: 1.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                            <div class="form-group">
+                                <label class="form-label">Observaciones Generales</label>
+                                <textarea id="portones-obs" style="width: 100%; height: 80px; resize: none;"
+                                    placeholder="Notas de turno, incidencias, etc..."></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Oficial que Realiza la REVISIóN</label>
+                                <input type="text" id="portones-officer" placeholder="Nombre del oficial">
+                                <label class="form-label" style="margin-top: 0.5rem;">Fecha / Hora</label>
+                                <input type="datetime-local" id="portones-datetime">
+                            </div>
+                        </div>
+
+                        <!-- History -->
+                        <div style="margin-top: 2rem;">
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                <h4 style="margin: 0;"><i class="fas fa-history"></i> Historial de Revisiones</h4>
+                                <button class="btn-export" onclick="exportPortonesLogs('pdf')"
+                                    style="background: var(--red-holcim);"><i class="fas fa-file-pdf"></i> PDF</button>
+                            </div>
+                            <div id="portones-history-container"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
         <!-- ===================== SETTINGS ===================== -->
         <div id="settings-view" class="view-section" style="display: none;">
-            <div class="dashboard-grid" style="grid-template-columns: 400px 1fr;">
-                <aside class="card-panel">
-                    <div class="panel-header" style="background: var(--primary-teal); color: white;">
-                        <h3 style="color: white;"><i class="fas fa-user-circle"></i> Mi Perfil</h3>
+            <div class="settings-container">
+                <aside class="settings-nav">
+                    <div class="settings-nav-item active" onclick="showSettingsSection('profile')"
+                        data-section="profile">
+                        <i class="fas fa-user-circle"></i>
+                        <span data-i18n="settings_nav_profile">Mi Perfil</span>
                     </div>
-                    <div class="panel-body" style="border-bottom: 2px solid var(--border-gray); margin-bottom: 1rem;">
+                    <div class="settings-nav-item" onclick="showSettingsSection('users')" data-section="users">
+                        <i class="fas fa-user-shield"></i>
+                        <span data-i18n="settings_nav_users">Gestión de Usuarios</span>
+                    </div>
+                    <div class="settings-nav-item" onclick="showSettingsSection('storage')" data-section="storage">
+                        <i class="fas fa-hdd"></i>
+                        <span data-i18n="settings_nav_storage">Almacenamiento</span>
+                    </div>
+                    <div class="settings-nav-item" onclick="showSettingsSection('logs')" data-section="logs">
+                        <i class="fas fa-stream"></i>
+                        <span data-i18n="settings_nav_logs">Bitácora en Vivo</span>
+                    </div>
+                    <div style="margin-top: auto; padding-top: 2rem;">
+                        <button class="btn-salida-corpo" id="btn-logout"
+                            style="border-color: var(--red-holcim); color: var(--red-holcim); font-weight: 900;">
+                            <i class="fas fa-sign-out-alt"></i> <span data-i18n="logout">CERRAR SESIóN</span>
+                        </button>
+                    </div>
+                </aside>
+
+                <main class="settings-content-card">
+                    <!-- Profile Section -->
+                    <div id="settings-profile" class="settings-section active">
+                        <h2 style="margin-bottom: 2rem;" data-i18n="settings_profile_title">Configuración de Perfil</h2>
                         <form id="my-profile-form">
                             <div class="form-group">
-                                <label class="form-label">Mi Perfil de Sitio</label>
+                                <label class="form-label" data-i18n="settings_profile_site">Mi Perfil de Sitio</label>
                                 <input type="text" id="my-site" placeholder="Ej: Planta Cartago..." required>
                             </div>
                             <div class="form-group">
-                                <label class="form-label">Nueva Contraseña</label>
+                                <label class="form-label" data-i18n="settings_profile_pass">Nueva Contraseña</label>
                                 <input type="password" id="my-new-pass" placeholder="Dejar vacío para no cambiar">
                             </div>
                             <button type="submit" class="btn-submit-action"
-                                style="background: var(--primary-teal); height: 40px; margin-top: 0.5rem;">ACTUALIZAR
-                                MIS DATOS</button>
+                                style="background: var(--primary-teal); max-width: 300px;">
+                                <span data-i18n="settings_profile_btn">ACTUALIZAR DATOS</span>
+                            </button>
                         </form>
                     </div>
 
-                    <div class="panel-header">
-                        <h3><i class="fas fa-user-shield" style="color: var(--primary-teal);"></i> Gestión de
-                            Usuarios
-                        </h3>
-                    </div>
-                    <div class="panel-body">
-                        <form id="user-form">
-                            <div class="form-group">
-                                <label class="form-label">Correo Electrónico</label>
-                                <input type="email" id="user-email" placeholder="usuario@gmail.com" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Contraseña</label>
-                                <input type="password" id="user-pass" placeholder="••••••••" required>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">Perfil de Sitio</label>
-                                <input type="text" id="user-site" placeholder="Ej: Planta Cartago, Cantera..." required>
-                            </div>
-                            <div class="form-group" style="margin-bottom: 1rem;">
-                                <label class="form-label">Permisos de Acceso</label>
-                                <div class="premium-permission-grid">
+                    <!-- User Management Section -->
+                    <div id="settings-users" class="settings-section">
+                        <h2 style="margin-bottom: 2rem;" data-i18n="settings_users_title">Gestión de Cuentas</h2>
+                        <div class="dashboard-grid" style="grid-template-columns: 350px 1fr; gap: 2rem;">
+                            <form id="user-form">
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" id="user-email" placeholder="usuario@gmail.com" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Password</label>
+                                    <input type="password" id="user-pass" required>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Sitio</label>
+                                    <input type="text" id="user-site" required>
+                                </div>
+                                <div class="premium-permission-grid"
+                                    style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 1rem;">
                                     <label class="perm-chip"><input type="checkbox" name="perm" value="dashboard"
                                             checked><span>Acceso</span></label>
                                     <label class="perm-chip"><input type="checkbox" name="perm"
                                             value="reports"><span>Reportes</span></label>
                                     <label class="perm-chip"><input type="checkbox" name="perm"
-                                            value="inductions"><span>Inducciones</span></label>
+                                            value="cctv-monitoring"><span>Monitoreo</span></label>
                                     <label class="perm-chip"><input type="checkbox" name="perm"
-                                            value="extra-auth"><span>Autorización</span></label>
+                                            value="database"><span>Base Datos</span></label>
                                     <label class="perm-chip"><input type="checkbox" name="perm"
-                                            value="database"><span>Base de Datos</span></label>
-                                    <label class="perm-chip"><input type="checkbox" name="perm"
-                                            value="forms"><span>Formularios</span></label>
+                                            value="extra-auth"><span>Extra Aut.</span></label>
                                     <label class="perm-chip"><input type="checkbox" name="perm"
                                             value="keys"><span>Llaves</span></label>
                                     <label class="perm-chip"><input type="checkbox" name="perm"
-                                            value="packages"><span>Paquetería</span></label>
+                                            value="inductions"><span>Inducciones</span></label>
                                     <label class="perm-chip"><input type="checkbox" name="perm"
-                                            value="settings"><span>Config</span></label>
+                                            value="settings"><span>Config.</span></label>
                                 </div>
+                                <button type="submit" class="btn-submit-action" style="margin-top: 1.5rem;">CREAR
+                                    USUARIO</button>
+                            </form>
+                            <div>
+                                <div class="monitor-list" id="user-list-body"></div>
                             </div>
-                            <button type="submit" class="btn-submit-action">CREAR PERFIL</button>
-                        </form>
-                        <div style="margin-top: 2rem; border-top: 1px solid var(--border-gray); padding-top: 1.5rem;">
-                            <button class="btn-salida-corpo" id="btn-logout"
-                                style="border-color: var(--red-holcim); color: var(--red-holcim); font-weight: 900;">
-                                <i class="fas fa-sign-out-alt"></i> CERRAR SESIÓN
+                        </div>
+                    </div>
+
+                    <!-- Local Storage Section -->
+                    <div id="settings-storage" class="settings-section">
+                        <h2 style="margin-bottom: 1rem;" data-i18n="settings_storage_title">Almacenamiento Local</h2>
+                        <p style="color: var(--text-muted); margin-bottom: 2rem;" data-i18n="settings_storage_subtitle">
+                            Configure una carpeta en su computadora para guardar copias de seguridad automÁticas de
+                            todos los registros.
+                        </p>
+
+                        <div id="btn-select-folder" class="btn-folder-select">
+                            <i class="fas fa-folder-open"></i>
+                            <span style="font-weight: 800;" data-i18n="settings_storage_select_btn">SELECCIONAR CARPETA
+                                DE DESTINO</span>
+                            <div id="selected-folder-path" class="folder-path-display" style="display: none;"></div>
+                        </div>
+
+                        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+                            <button class="btn-submit-action" style="background: var(--primary-green); flex: 1;"
+                                onclick="triggerManualBackup()">
+                                <i class="fas fa-cloud-download-alt"></i> <span
+                                    data-i18n="settings_storage_backup_btn">RESPALDAR TODO AHORA</span>
+                            </button>
+                            <button class="btn-submit-action" style="background: var(--navy-black); flex: 1;"
+                                onclick="testFolderAccess()">
+                                <i class="fas fa-shield-alt"></i> <span data-i18n="settings_storage_test_btn">PROBAR
+                                    CONEXIÓN</span>
                             </button>
                         </div>
-                    </div>
-                </aside>
-
-                <section class="monitor-view">
-                    <div class="card-panel">
-                        <div class="panel-header">
-                            <h3><i class="fas fa-users" style="color: var(--primary-teal);"></i> Cuentas Existentes
-                            </h3>
-                        </div>
-                        <div class="monitor-list" style="margin-top: 1rem;">
-                            <div class="list-head" style="grid-template-columns: 1fr 1fr 120px;">
-                                <span>Usuario / Correo</span>
-                                <span>Permisos Asignados</span>
-                                <span>Acción</span>
+                        <div id="storage-drive-tip"
+                            style="margin-top: 1.5rem; padding: 15px; background: rgba(0, 156, 189, 0.05); border: 1px dashed var(--primary-teal); border-radius: 8px; display: none;">
+                            <div
+                                style="display: flex; align-items: center; gap: 12px; color: var(--primary-teal); font-weight: 700; font-size: 0.8rem;">
+                                <i class="fab fa-google-drive" style="font-size: 1.2rem;"></i>
+                                <span>Sugerencia: Para respaldo en la nube, seleccione una carpeta sincronizada con
+                                    Google Drive para Escritorio.</span>
                             </div>
-                            <div id="user-list-body"><!-- Dynamic user rows --></div>
                         </div>
                     </div>
 
-                    <div class="card-panel" style="margin-top: 1.5rem;">
-                        <div class="panel-header"
-                            style="display: flex; justify-content: space-between; align-items: center;">
-                            <h3><i class="fas fa-stream" style="color: var(--primary-teal);"></i> Bitácora en Vivo
-                                (Actividad del Sistema)</h3>
-                            <div style="display: flex; gap: 8px; align-items: center;">
-                                <select id="log-filter-module"
-                                    style="height: 28px; font-size: 0.7rem; width: 120px; font-weight: 700;">
-                                    <option value="ALL">MODULO: TODOS</option>
-                                    <option value="ACCESO">ACCESO</option>
-                                    <option value="LLAVES">LLAVES</option>
-                                    <option value="PAQUETERIA">PAQUETERIA</option>
-                                    <option value="SISTEMA">SISTEMA</option>
-                                    <option value="AUTORIZACIÓN">AUTORIZACIÓN</option>
-                                </select>
-                                <button class="btn-export"
-                                    style="background: var(--text-muted); font-size: 0.65rem; height: 28px;"
-                                    onclick="exportEventLog()">
-                                    <i class="fas fa-download"></i> EXPORTAR LOG
-                                </button>
-                            </div>
+                    <!-- Live Log Section -->
+                    <div id="settings-logs" class="settings-section">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                            <h2 data-i18n="settings_logs_title">Bitácora en Vivo</h2>
+                            <button class="btn-export" onclick="exportEventLog()">
+                                <i class="fas fa-file-export"></i> EXPORTAR
+                            </button>
                         </div>
-                        <div class="monitor-list" style="margin-top: 1rem; max-height: 400px; overflow-y: auto;">
+                        <div class="monitor-list" style="max-height: 500px; overflow-y: auto;" id="live-log-container">
                             <div class="list-head" style="grid-template-columns: 140px 100px 100px 1fr;">
                                 <span>Fecha / Hora</span>
                                 <span>Usuario</span>
@@ -1106,11 +1734,41 @@
                             </div>
                             <div id="live-event-log">
                                 <div style="padding: 2rem; text-align: center; color: var(--text-muted);">Iniciando
-                                    bitácora de eventos...</div>
+                                    Bitácora de eventos...</div>
                             </div>
                         </div>
                     </div>
-                </section>
+                </main>
+            </div>
+        </div>
+
+        <!-- ===================== CALENDAR ===================== -->
+        <div id="calendar-view" class="view-section calendar-view" style="display: none;">
+            <div class="calendar-header" style="padding: 1rem 1.5rem; margin-bottom: 1rem;">
+                <div>
+                    <h2 style="font-size: 1.5rem; font-weight: 900; text-transform: uppercase; margin-bottom: 0;">
+                        Calendario de Eventos</h2>
+                </div>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <button class="btn-submit-action" onclick="changeMonth(-1)"
+                        style="padding: 5px 12px; background: rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); width: auto; height: auto; margin-top: 0;"><i
+                            class="fas fa-chevron-left"></i></button>
+                    <h3 id="calendar-month-year"
+                        style="margin: 0; min-width: 150px; text-align: center; color: var(--navy-black); border: none; padding: 0; font-size: 1.2rem; font-weight: 900; letter-spacing: -0.5px;">
+                        Mes aÑo</h3>
+                    <button class="btn-submit-action" onclick="changeMonth(1)"
+                        style="padding: 5px 12px; background: rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); width: auto; height: auto; margin-top: 0;"><i
+                            class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div class="calendar-container" style="border-radius: 12px; overflow: hidden;">
+                <div class="calendar-grid-header" style="padding: 10px 0; font-size: 0.7rem;">
+                    <span>LUN</span><span>MAR</span><span>MIÉ</span><span>JUE</span><span>VIE</span><span>SÁB</span><span>DOM</span>
+                </div>
+                <div id="calendar-grid" class="calendar-grid">
+                    <!-- Day cells injected by JS -->
+                </div>
             </div>
         </div>
 
@@ -1173,7 +1831,9 @@
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label class="form-label">Gafete</label>
-                    <input type="text" id="edit-badge">
+                    <select id="edit-badge">
+                        <option value="">Seleccione Gafete...</option>
+                    </select>
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label class="form-label">Departamento</label>
@@ -1289,6 +1949,64 @@
         </div>
     </div>
 
+
+    <!-- Event Modal -->
+    <div id="modal-calendar-event" class="modal-overlay">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="panel-header"
+                style="background: var(--primary-teal); display: flex; justify-content: space-between; align-items: center;">
+                <h3 style="color: white; margin: 0;"><i class="fas fa-calendar-plus"></i> Gestionar Evento</h3>
+                <button onclick="closeEventModal()"
+                    style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div class="panel-body">
+                <form id="event-form">
+                    <input type="hidden" id="event-date">
+                    <div class="form-group">
+                        <label class="form-label" id="event-date-display"
+                            style="font-weight: 800; color: var(--navy-black);"></label>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Título del Evento / Nota</label>
+                        <input type="text" id="event-title" placeholder="Ej: Mantimiento Proyectores" required>
+                    </div>
+                    <div class="form-group"><label class="form-label">Hora del Evento</label><input type="time"
+                            id="event-time" value="09:00"
+                            style="width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Descripción Detallada</label>
+                        <textarea id="event-desc" style="width: 100%; height: 80px; resize: none;"
+                            placeholder="Detalles del evento..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Color de Etiqueta</label>
+                        <div style="display: flex; gap: 15px; margin-top: 5px;">
+                            <label style="cursor:pointer;"><input type="radio" name="event-color"
+                                    value="var(--primary-teal)" checked style="display:none;"> <span
+                                    class="color-picker-dot"
+                                    style="display:inline-block; width:24px; height:24px; background:var(--primary-teal); border-radius:50%; border: 2px solid white; box-shadow: 0 0 0 1px #ddd;"></span></label>
+                            <label style="cursor:pointer;"><input type="radio" name="event-color"
+                                    value="var(--primary-green)" style="display:none;"> <span class="color-picker-dot"
+                                    style="display:inline-block; width:24px; height:24px; background:var(--primary-green); border-radius:50%; border: 2px solid white; box-shadow: 0 0 0 1px #ddd;"></span></label>
+                            <label style="cursor:pointer;"><input type="radio" name="event-color"
+                                    value="var(--red-holcim)" style="display:none;"> <span class="color-picker-dot"
+                                    style="display:inline-block; width:24px; height:24px; background:var(--red-holcim); border-radius:50%; border: 2px solid white; box-shadow: 0 0 0 1px #ddd;"></span></label>
+                            <label style="cursor:pointer;"><input type="radio" name="event-color" value="#f59e0b"
+                                    style="display:none;"> <span class="color-picker-dot"
+                                    style="display:inline-block; width:24px; height:24px; background:#f59e0b; border-radius:50%; border: 2px solid white; box-shadow: 0 0 0 1px #ddd;"></span></label>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 1.5rem;">
+                        <button type="button" onclick="deleteEvent()" id="btn-delete-event" class="btn-salida-corpo"
+                            style="background: #ef4444; border-color: #ef4444; flex: 1; display: none;">ELIMINAR</button>
+                        <button type="submit" class="btn-submit-action" style="flex: 2;">GUARDAR EVENTO</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Edit Package Modal -->
     <div id="modal-edit-package" class="modal-overlay" style="display: none;">
         <div class="modal-card" style="max-width: 500px;">
@@ -1299,7 +2017,7 @@
             <div class="modal-body">
                 <input type="hidden" id="edit-package-id">
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label class="form-label">Mensajería / Courier</label>
+                    <label class="form-label">MensajerÍa / Courier</label>
                     <input type="text" id="edit-pkg-courier">
                 </div>
                 <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -1323,7 +2041,7 @@
             </div>
             <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden; background: #000;"></div>
             <p style="text-align: center; color: var(--text-muted); font-size: 0.8rem; margin-top: 1rem;">Enfoque el
-                código QR o código de barras de la cédula.</p>
+                Código QR o Código de barras de la CÉdula.</p>
             <button onclick="closeScanner()" class="btn-salida-corpo"
                 style="margin-top: 1rem; width: 100%;">CANCELAR</button>
         </div>
@@ -1364,6 +2082,85 @@
         </div>
     </div>
 
+    <!-- Safety Event Report Modal -->
+    <div id="modal-safety-report" class="modal-overlay" style="display: none;">
+        <div class="modal-content"
+            style="max-width: 600px; max-height: 95vh; display: flex; flex-direction: column; overflow: hidden; border-radius: 12px;">
+            <div class="panel-header"
+                style="background: var(--navy-black); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
+                <h3 style="color: white; margin: 0;"><i class="fas fa-file-shield"></i> Reporte de Evento de Seguridad
+                </h3>
+                <button onclick="closeSafetyReportModal()"
+                    style="background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer;">&times;</button>
+            </div>
+            <div class="panel-body" style="overflow-y: auto; flex-grow: 1; padding: 1.5rem;">
+                <form id="safety-report-form">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Fecha del Evento</label>
+                            <input type="date" id="sr-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Hora del Evento</label>
+                            <input type="time" id="sr-time" required>
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div class="form-group">
+                            <label class="form-label">Nombre del Oficial / Reportante</label>
+                            <input type="text" id="sr-officer" placeholder="Nombre completo..." required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Incidente</label>
+                            <input type="text" id="sr-type" placeholder="Ej: Intrusión, Robo, Falla..." required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Área o Sector Vinculado (Texto Abierto)</label>
+                        <input type="text" id="sr-area" placeholder="Especifique el área exacta..." required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Personas Involucradas</label>
+                        <input type="text" id="sr-people" placeholder="Nombres, cargos o ID si aplica...">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Detalle del Evento / Incidente</label>
+                        <textarea id="sr-detail" style="width: 100%; height: 100px; resize: none;"
+                            placeholder="Describa los hechos de forma clara..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Acciones Tomadas</label>
+                        <textarea id="sr-actions" style="width: 100%; height: 80px; resize: none;"
+                            placeholder="¿Qué medidas se aplicaron inmediatamente?"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Adjuntar Evidencia Fotográfica</label>
+                        <input type="file" id="sr-photo" accept="image/*" onchange="previewSafetyImage(event)">
+                        <div id="sr-photo-preview" style="margin-top: 10px; display: none; text-align: center;">
+                            <img id="sr-preview-img"
+                                style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ddd;">
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px; margin-top: 2rem;">
+                        <button type="button" onclick="closeSafetyReportModal()" class="btn-salida-corpo"
+                            style="flex: 1;">CANCELAR</button>
+                        <button type="button" onclick="downloadSafetyReportPDF()" class="btn-submit-action"
+                            style="flex: 1; background: var(--primary-teal);">
+                            <i class="fas fa-file-pdf"></i> GENERAR REPORTE AZUL
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <!-- Personnel Detail Modal (Dashboard Drill-down) -->
     <div id="modal-personnel-detail" class="modal-overlay">
         <div class="modal-content" style="max-width: 900px;">
@@ -1383,6 +2180,29 @@
                         <span>Hora Ingreso</span>
                     </div>
                     <div id="personnel-detail-body"><!-- Dynamic rows --></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Map Picker Modal -->
+    <div id="modal-map-picker" class="modal-overlay" style="display: none;">
+        <div class="modal-card" style="max-width: 800px; padding: 0; overflow: hidden; border-radius: 12px;">
+            <div class="modal-header" style="background: var(--navy-black); padding: 1rem 2rem;">
+                <h3 style="color: white; margin: 0;"><i class="fas fa-map-location-dot"></i> Seleccionar Ubicación</h3>
+                <button class="btn-close-modal" onclick="closeMapPicker()" style="color: white;">&times;</button>
+            </div>
+            <div id="picker-map" style="height: 500px; width: 100%; min-width: 300px;"></div>
+            <div
+                style="padding: 1rem 2rem; background: #f8fafc; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-gray);">
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0;">Haga clic en el mapa para marcar la
+                    UBICACIóN exacta.</p>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <span id="picker-coords-display"
+                        style="font-family: monospace; font-size: 0.9rem; font-weight: 700; color: var(--primary-teal);">[
+                        - , - ]</span>
+                    <button class="btn-crear" onclick="confirmMapPickerSelection()"
+                        style="padding: 5px 15px; margin: 0; width: auto;">CONFIRMAR</button>
                 </div>
             </div>
         </div>
